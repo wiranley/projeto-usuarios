@@ -21,6 +21,8 @@ class UserController {
 
             let values = this.getValues();
 
+            if (!values) return false;
+
             this.getPhoto().then(
                 (content) => {
 
@@ -83,8 +85,16 @@ class UserController {
     getValues(){
 
         let user = {};
+        let isValid = true;
 
         [...this.formEl.elements].forEach(function(field, index){
+
+            if (['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value) {
+
+                field.parentElement.classList.add("has-error");
+                isValid = false
+
+            }
 
             if (field.name === "gender") {
     
@@ -103,6 +113,10 @@ class UserController {
             }
     
         });
+
+        if (!isValid) {
+            return false;
+        }
     
         return new User(
             user.name, 
@@ -122,6 +136,8 @@ class UserController {
 
         let tr = document.createElement('tr');
 
+        tr.dataset.user = JSON.stringify(dataUser);
+
         tr.innerHTML = `
             <tr>
                 <td><img src=${dataUser.photo} class="img-circle img-sm"></td>
@@ -138,5 +154,27 @@ class UserController {
 
         this.tableEl.appendChild(tr);
 
+        this.updateCount();
+
+
+    }
+
+    updateCount(){
+
+        let numberUser = 0;
+        let numberAdmin = 0;
+
+        [...this.tableEl.children].forEach(tr => {
+
+            numberUser++;
+
+            let user = JSON.parse(tr.dataset.user);
+
+            if(user._admin) numberAdmin++;
+
+        });
+
+        document.querySelector('#number-users').innerHTML = numberUser;
+        document.querySelector('#number-users-admin').innerHTML = numberAdmin;
     }
 }
